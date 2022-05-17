@@ -2,9 +2,11 @@ package com.chuangdun.flutter.plugin.HkHeop
 
 import android.content.ContentValues.TAG
 import android.content.Context
+import android.os.Build
 import android.os.Handler
 import android.util.Log
 import androidx.annotation.NonNull
+import androidx.annotation.RequiresApi
 import com.chuangdun.flutter.plugin.HkHeop.api.ApiService
 import com.chuangdun.flutter.plugin.HkHeop.callback.ApiCallback
 import com.chuangdun.flutter.plugin.HkHeop.libs.result.ApiResult
@@ -13,15 +15,19 @@ import com.chuangdun.flutter.plugin.HkHeop.socket.GsonParse
 import com.chuangdun.flutter.plugin.HkHeop.socket.HikSocket
 import com.chuangdun.flutter.plugin.HkHeop.socket.JsonResultParse
 import com.chuangdun.flutter.plugin.HkHeop.socket.SocketClient
+import com.chuangdun.flutter.plugin.HkHeop.utils.XmlUtils
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.Result
+import java.io.ByteArrayInputStream
+import java.io.InputStream
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+
 
 /** HkHeopPlugin */
 private const val TAG = "HkHeopPlugin"
@@ -76,7 +82,6 @@ class HkHeopPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
               }
             }
           }
-          
           override fun onFailure(code: Int?) {
             result.error("500","指纹录入失败!错误码:$code",null)
           }
@@ -153,9 +158,21 @@ class HkHeopPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
             Log.d("heop::", "heopFaceCollect: $code")
           }
 
-          override fun onSuccess(result: ApiResult<String?>?) {
-            if (result != null) {
-              Log.d("heop::", "heopFaceCollect: " + result.data)
+          @RequiresApi(Build.VERSION_CODES.N)
+          override fun onSuccess(apiResult: ApiResult<String?>?) {
+            if (apiResult != null) {
+              Log.d("heop::", "heopFaceCollect: " + apiResult.data)
+              if(apiResult.data != null){
+                val fields: ArrayList<String> = ArrayList()
+                fields.add("faceDataUrl")
+                fields.add("modelData")
+                val inputStream: InputStream = ByteArrayInputStream(apiResult.data?.toByteArray())
+                val lists: List<String>? = XmlUtils.parse(inputStream,fields)
+                result.success(mapOf(
+                        "url" to (lists?.get(0) ?: ""),
+                        "feature" to (lists?.get(1) ?: "")
+                ))
+              }
             }
           }
         })

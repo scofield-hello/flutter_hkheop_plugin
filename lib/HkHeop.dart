@@ -390,7 +390,8 @@ class HkHeop {
 
   ///三次按压指纹.
   Future<FingerInfo> getCollectFingerprint() async {
-    return await _channel.invokeMethod('getCollectFingerprint');
+    Map map = await _channel.invokeMethod('getCollectFingerprint');
+    return FingerInfo(map["feature"],map["bitmap"]);
   }
 
   ///获取门禁配置.
@@ -413,7 +414,8 @@ class HkHeop {
 
   ///获取人脸图片.
   Future<FaceInfo> getCaptureFaceData() async {
-    return await _channel.invokeMethod('getCaptureFaceData');
+    Map map = await _channel.invokeMethod('getCaptureFaceData');
+    return FaceInfo(map["feature"], map["url"]);
   }
 
   ///人脸比对.
