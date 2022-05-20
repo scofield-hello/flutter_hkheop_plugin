@@ -1,119 +1,11 @@
 import 'dart:async';
 
+import 'package:HkHeop/FaceInfo.dart';
+import 'package:HkHeop/FingerInfo.dart';
+import 'package:HkHeop/HkHeopEventType.dart';
+import 'package:HkHeop/IDCardInfo.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
-
-class FingerInfo {
-  ///指纹特征.
-  final String feature;
-
-  ///指纹base64图像.
-  final String bitmap;
-
-  const FingerInfo(this.feature, this.bitmap)
-      : assert(feature != null && feature.length > 0),
-        assert(bitmap != null && bitmap.length > 0);
-}
-
-class FaceInfo {
-  ///人脸建模值.
-  final String feature;
-
-  ///人脸图像路径.
-  final String url;
-
-  const FaceInfo(this.feature, this.url)
-      : assert(feature != null && feature.length > 0),
-        assert(url != null && url.length > 0);
-}
-
-class AcsConfigInfo {
-  ///测温开关使能.
-  final bool thermalEnabled;
-
-  ///距离单位.
-  final String distanceUnit;
-
-  ///距离.
-  final double distance;
-
-  ///温度阈值上限.
-  final double highestThermalThreshold;
-
-  ///温度阈值下限.
-  final double lowestThermalThreshold;
-
-  ///二维码功能使能.
-  final bool qRCodeEnabled;
-
-  ///语音报警类型.
-  /**
-   * 人脸    0x20 32
-   * 刷卡    0x02 2
-   * 指纹    0x04 4
-   * 人脸或刷卡   0x2a 42
-   * 人脸或指纹   0x2c 44
-   * 刷卡或指纹   0x0e 14
-   * 人脸或刷卡或指纹  0x2e 46
-   */
-  final int authType;
-
-  const AcsConfigInfo(
-      {this.thermalEnabled = false,
-      this.distanceUnit = "meter",
-      this.distance =  0.500000,
-      this.highestThermalThreshold = 3730,
-      this.lowestThermalThreshold = 3500,
-      this.qRCodeEnabled = false,
-      this.authType = 32});
-}
-
-class IDCardInfo {
-  ///卡号
-  final String id;
-
-  ///姓名
-  final String name;
-
-  ///性别
-  final String sex;
-
-  ///民族
-  final String nation;
-
-  ///出生日期
-  final String birth;
-
-  ///地址
-  final String address;
-
-  ///签发机关
-  final String depart;
-
-  ///有效期起始时间
-  final String startDate;
-
-  ///有效期截止时间
-  final String endDate;
-
-  ///身份证图片url
-  final String url;
-  IDCardInfo(
-      {this.id,
-      this.name,
-      this.sex,
-      this.nation,
-      this.birth,
-      this.address,
-      this.depart,
-      this.startDate,
-      this.endDate,
-      this.url});
-}
-
-class HkHeopEventType {
-  static const EVENT_ON_ID_CARD_RECEIVED = 0;
-}
 
 class Commands {
   ///获取设备信息
@@ -312,17 +204,45 @@ class Commands {
   static final String Verify_1VN = "/identify/identifyResult";
 }
 
-class HkFaceCameraViewParams {
-  final int channelId;
-  final int cameraId;
-  const HkFaceCameraViewParams({this.cameraId = 0, this.channelId = 0});
+class AcsConfigInfo {
+  ///测温开关使能.
+  final bool thermalEnabled;
 
-  Map<String, dynamic> asJson() {
-    return {
-      "cameraId": cameraId,
-      "channelId": channelId,
-    };
-  }
+  ///距离单位.
+  final String distanceUnit;
+
+  ///距离.
+  final double distance;
+
+  ///温度阈值上限.
+  final double highestThermalThreshold;
+
+  ///温度阈值下限.
+  final double lowestThermalThreshold;
+
+  ///二维码功能使能.
+  final bool qRCodeEnabled;
+
+  ///语音报警类型.
+  /**
+   * 人脸    0x20 32
+   * 刷卡    0x02 2
+   * 指纹    0x04 4
+   * 人脸或刷卡   0x2a 42
+   * 人脸或指纹   0x2c 44
+   * 刷卡或指纹   0x0e 14
+   * 人脸或刷卡或指纹  0x2e 46
+   */
+  final int authType;
+
+  const AcsConfigInfo(
+      {this.thermalEnabled = false,
+      this.distanceUnit = "meter",
+      this.distance = 0.500000,
+      this.highestThermalThreshold = 3730,
+      this.lowestThermalThreshold = 3500,
+      this.qRCodeEnabled = false,
+      this.authType = 32});
 }
 
 Map nations = {
@@ -383,6 +303,19 @@ Map nations = {
   55: "珞巴",
   56: "基诺"
 };
+
+class HkFaceCameraViewParams {
+  final int channelId;
+  final int cameraId;
+  const HkFaceCameraViewParams({this.cameraId = 0, this.channelId = 0});
+
+  Map<String, dynamic> asJson() {
+    return {
+      "cameraId": cameraId,
+      "channelId": channelId,
+    };
+  }
+}
 
 class HkFaceCameraView extends StatelessWidget {
   final _viewType = "HkFaceCameraView";
