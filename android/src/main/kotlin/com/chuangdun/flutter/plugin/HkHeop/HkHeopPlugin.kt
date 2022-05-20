@@ -2,6 +2,7 @@ package com.chuangdun.flutter.plugin.HkHeop
 
 import android.content.ContentValues.TAG
 import android.content.Context
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.Handler
 import android.util.Log
@@ -43,6 +44,7 @@ class HkHeopPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
   private  var hikSocket: HikSocket? = null
   private  var apiService:ApiService?  = null
   private var eventSink: EventChannel.EventSink? = null
+  private var mMediaPlayer: MediaPlayer? = null
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     context = flutterPluginBinding.applicationContext
@@ -93,11 +95,20 @@ class HkHeopPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
           override fun onFailure(code: Int) {
             super.onFailure(code)
             Log.d("heop::", "heopGetAcsCfg: $code")
+            result.error("500","获取配置失败!错误码:$code",null)
           }
 
-          override fun onSuccess(result: ApiResult<AcsCfgDataX?>?) {
-            if (result != null) {
-              Log.d("heop::", "heopGetAcsCfg: " + result.data)
+          override fun onSuccess(apiResult: ApiResult<AcsCfgDataX?>?) {
+            if (apiResult != null) {
+              Log.d("heop::", "heopGetAcsCfg: " + apiResult.data)
+              result.success(mapOf(
+                      "thermalEnabled" to apiResult.data?.acsCfg?.thermalEnabled,
+                      "distanceUnit" to apiResult.data?.acsCfg?.distanceUnit,
+                      "distance" to apiResult.data?.acsCfg?.distance,
+                      "highestThermalThreshold" to apiResult.data?.acsCfg?.highestThermalThreshold,
+                      "QRCodeEnabled" to apiResult.data?.acsCfg?.qrCodeEnabled,
+                      "authType" to apiResult.data?.acsCfg?.authType
+              ))
             }
           }
         })
@@ -130,7 +141,7 @@ class HkHeopPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
 
           override fun onSuccess(result: ApiResult<Void?>?) {
             if (result != null) {
-              Log.d("heop::", "heopSetAcsCfg: " + result.data)
+              Log.d("heop::", "heopSetAcsCfg: " + result.data.toString())
             }
           }
         })
@@ -142,40 +153,50 @@ class HkHeopPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
           override fun onFailure(code: Int) {
             super.onFailure(code)
             Log.d("heop::", "heopPictureAnalysis: $code")
+            result.error("500","图片建模失败!错误码:$code",null)
           }
 
-          override fun onSuccess(result: ApiResult<HeopResponse?>?) {
-            if (result != null) {
-              Log.d("heop::", "heopPictureAnalysis: " + result.data)
+          override fun onSuccess(apiResult: ApiResult<HeopResponse?>?) {
+            if (apiResult != null) {
+              Log.d("heop::", "heopPictureAnalysis: " + apiResult.data)
+              if(apiResult.data?.targets?.size != 0){
+                result.success(apiResult.data?.targets?.get(0)?.targetModelData)
+              }
             }
           }
         })
       }
       "getCaptureFaceData" -> {
-        apiService?.heopFaceCollect(object : ApiCallback<String?>() {
-          override fun onFailure(code: Int) {
-            super.onFailure(code)
-            Log.d("heop::", "heopFaceCollect: $code")
-          }
+        val detectTask = Runnable {
+          playSound(R.raw.start_detect_face, 4000)
+          apiService?.heopFaceCollect(object : ApiCallback<String?>() {
+            override fun onFailure(code: Int) {
+              super.onFailure(code)
+              Log.d("heop::", "heopFaceCollect: $code")
+              result.error("500","获取人脸图片失败!错误码:$code",null)
+            }
 
-          @RequiresApi(Build.VERSION_CODES.N)
-          override fun onSuccess(apiResult: ApiResult<String?>?) {
-            if (apiResult != null) {
-              Log.d("heop::", "heopFaceCollect: " + apiResult.data)
-              if(apiResult.data != null){
-                val fields: ArrayList<String> = ArrayList()
-                fields.add("faceDataUrl")
-                fields.add("modelData")
-                val inputStream: InputStream = ByteArrayInputStream(apiResult.data?.toByteArray())
-                val lists: List<String>? = XmlUtils.parse(inputStream,fields)
-                result.success(mapOf(
-                        "url" to (lists?.get(0) ?: ""),
-                        "feature" to (lists?.get(1) ?: "")
-                ))
+            @RequiresApi(Build.VERSION_CODES.N)
+            override fun onSuccess(apiResult: ApiResult<String?>?) {
+              if (apiResult != null) {
+                Log.d("heop::", "heopFaceCollect: " + apiResult.data)
+                playSound(R.raw.face_detected, 1500)
+                if(apiResult.data != null){
+                  val fields: ArrayList<String> = ArrayList()
+                  fields.add("faceDataUrl")
+                  fields.add("modelData")
+                  val inputStream: InputStream = ByteArrayInputStream(apiResult.data?.toByteArray())
+                  val lists: List<String>? = XmlUtils.parse(inputStream,fields)
+                  result.success(mapOf(
+                          "url" to (lists?.get(0) ?: ""),
+                          "feature" to (lists?.get(1) ?: "")
+                  ))
+                }
               }
             }
-          }
-        })
+          })
+        }
+        threadPool.execute(detectTask)
       }
       "faceComparison" -> {
         val arguments = call.arguments as Map<*, *>
@@ -189,50 +210,70 @@ class HkHeopPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
           override fun onFailure(code: Int) {
             super.onFailure(code)
             Log.d("heop::", "heopImagesComparision: $code")
+            result.error("500","对比失败!错误码:$code",null)
           }
 
-          override fun onSuccess(result: ApiResult<HeopResponse?>?) {
-            if (result != null) {
-              Log.d("heop::", "heopImagesComparision: " + result.data)
+          override fun onSuccess(apiResult: ApiResult<HeopResponse?>?) {
+            if (apiResult != null) {
+              result.success(apiResult.data?.similarity)
             }
           }
         })
       }
       "addIDCardCallback" -> {
-        //接收身份证事件
-        apiService?.selfIdCardInfo(object : ApiCallback<EventData?>() {
-          override fun onSuccess(result: ApiResult<EventData?>) {
-            Log.d("heop::", "selfIdCardInfo: " + result.data)
-            val cardInfo = result.data?.cardInfoEvent?.cardInfo
-            uiHandler.post {
-              eventSink?.success(mapOf(
-                      "event" to EVENT_ON_ID_CARD_RECEIVED,
-                      "IDCardInfo" to mapOf(
-                              "name" to cardInfo?.name?.trim(),
-                              "address" to cardInfo?.addr?.trim(),
-                              "cardNo" to cardInfo?.cardNo?.trim(),
-                              "sex" to cardInfo?.sex?.trim(),
-                              "startDate" to cardInfo?.startDate?.trim(),
-                              "endDate" to cardInfo?.endDate?.trim(),
-                              "depart" to cardInfo?.issuingAuthority?.trim(),
-                              "url" to result.data?.cardInfoEvent?.cardPicURL,
-                              "nation" to cardInfo?.nation
-                      )
-              ))
+        val detectTask = Runnable {
+          playSound(R.raw.ic_card_began_read, 4000)
+          //接收身份证事件
+          apiService?.selfIdCardInfo(object : ApiCallback<EventData?>() {
+            override fun onSuccess(result: ApiResult<EventData?>) {
+              Log.d("heop::", "selfIdCardInfo: " + result.data)
+              val cardInfo = result.data?.cardInfoEvent?.cardInfo
+              playSound(R.raw.ic_card_success, 1800)
+              uiHandler.post {
+                eventSink?.success(mapOf(
+                        "event" to EVENT_ON_ID_CARD_RECEIVED,
+                        "IDCardInfo" to mapOf(
+                                "name" to cardInfo?.name?.trim(),
+                                "address" to cardInfo?.addr?.trim(),
+                                "cardNo" to cardInfo?.cardNo?.trim(),
+                                "sex" to cardInfo?.sex?.trim(),
+                                "startDate" to cardInfo?.startDate?.trim(),
+                                "endDate" to cardInfo?.endDate?.trim(),
+                                "depart" to cardInfo?.issuingAuthority?.trim(),
+                                "url" to result.data?.cardInfoEvent?.cardPicURL,
+                                "nation" to cardInfo?.nation
+                        )
+                ))
+              }
             }
-          }
 
-          override fun onFailure(code: Int) {
-            super.onFailure(code)
-            Log.d("heop::", "selfIdCardInfo: $code")
-            uiHandler.post {
-              eventSink?.error("500","身份证读取失败!错误码:$code",null)
+            override fun onFailure(code: Int) {
+              super.onFailure(code)
+              Log.d("heop::", "selfIdCardInfo: $code")
+              uiHandler.post {
+                playSound(R.raw.ic_card_failure, 1800)
+                eventSink?.error("500", "身份证读取失败!错误码:$code", null)
+              }
             }
-          }
-        })
-
+          })
+        }
+        threadPool.execute(detectTask)
       }
       else -> result.notImplemented()
+    }
+  }
+
+  private fun playSound(resid:Int, waitMillis:Long){
+    try {
+      mMediaPlayer = MediaPlayer.create(context, resid)
+      mMediaPlayer!!.start()
+      Thread.sleep(waitMillis)
+      mMediaPlayer!!.stop()
+      mMediaPlayer!!.release()
+    }catch (e: InterruptedException){
+      Log.e(TAG, "线程睡眠waitMillis毫秒失败.${e.message}")
+    }catch (e: Exception) {
+      Log.e(TAG, "MediaPlayer错误.${e.message}")
     }
   }
 

@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:typed_data';
+
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -35,7 +35,7 @@ class AcsConfigInfo {
   final String distanceUnit;
 
   ///距离.
-  final int distance;
+  final double distance;
 
   ///温度阈值上限.
   final double highestThermalThreshold;
@@ -44,7 +44,7 @@ class AcsConfigInfo {
   final double lowestThermalThreshold;
 
   ///二维码功能使能.
-  final bool QRCodeEnabled;
+  final bool qRCodeEnabled;
 
   ///语音报警类型.
   /**
@@ -56,16 +56,16 @@ class AcsConfigInfo {
    * 刷卡或指纹   0x0e 14
    * 人脸或刷卡或指纹  0x2e 46
    */
-  final String authType;
+  final int authType;
 
   const AcsConfigInfo(
-      {this.thermalEnabled,
-        this.distanceUnit,
-        this.distance,
-        this.highestThermalThreshold,
-        this.lowestThermalThreshold,
-        this.QRCodeEnabled,
-        this.authType});
+      {this.thermalEnabled = false,
+      this.distanceUnit = "meter",
+      this.distance =  0.500000,
+      this.highestThermalThreshold = 3730,
+      this.lowestThermalThreshold = 3500,
+      this.qRCodeEnabled = false,
+      this.authType = 32});
 }
 
 class IDCardInfo {
@@ -100,15 +100,15 @@ class IDCardInfo {
   final String url;
   IDCardInfo(
       {this.id,
-        this.name,
-        this.sex,
-        this.nation,
-        this.birth,
-        this.address,
-        this.depart,
-        this.startDate,
-        this.endDate,
-        this.url});
+      this.name,
+      this.sex,
+      this.nation,
+      this.birth,
+      this.address,
+      this.depart,
+      this.startDate,
+      this.endDate,
+      this.url});
 }
 
 class HkHeopEventType {
@@ -315,10 +315,7 @@ class Commands {
 class HkFaceCameraViewParams {
   final int channelId;
   final int cameraId;
-  const HkFaceCameraViewParams(
-      {
-        this.cameraId = 0,
-        this.channelId = 0});
+  const HkFaceCameraViewParams({this.cameraId = 0, this.channelId = 0});
 
   Map<String, dynamic> asJson() {
     return {
@@ -328,18 +325,70 @@ class HkFaceCameraViewParams {
   }
 }
 
-Map nations = {1:"汉",2:"蒙古",3:"回",4:"藏",5:"维吾尔",6:"苗",7:"彝",8:"壮",9:"布依",10:"朝鲜",11:"满",12:"侗",13:"瑶",14:"白",15:"土家"
-  ,16:"哈尼",17:"哈萨克",18:"傣",19:"黎",20:"傈僳",21:"佤",22:"畲",23:"高山",24:"拉祜",25:"水",26:"东乡",27:"纳西",28:"景颇",29:"柯尔克孜"
-  ,30:"土",31:"达斡尔",32:"仫佬",33:"羌",34:"布朗",35:"撒拉",36:"毛南",37:"仡佬",38:"锡伯",39:"阿昌",40:"普米",41:"塔吉克",42:"怒",43:"乌孜别克"
-  ,44:"俄罗斯",45:"鄂温克",46:"德昂",47:"保安",48:"裕固",49:"京",50:"塔塔尔",51:"独龙",52:"鄂伦春",53:"赫哲",54:"门巴",55:"珞巴",56:"基诺"};
-
+Map nations = {
+  1: "汉",
+  2: "蒙古",
+  3: "回",
+  4: "藏",
+  5: "维吾尔",
+  6: "苗",
+  7: "彝",
+  8: "壮",
+  9: "布依",
+  10: "朝鲜",
+  11: "满",
+  12: "侗",
+  13: "瑶",
+  14: "白",
+  15: "土家",
+  16: "哈尼",
+  17: "哈萨克",
+  18: "傣",
+  19: "黎",
+  20: "傈僳",
+  21: "佤",
+  22: "畲",
+  23: "高山",
+  24: "拉祜",
+  25: "水",
+  26: "东乡",
+  27: "纳西",
+  28: "景颇",
+  29: "柯尔克孜",
+  30: "土",
+  31: "达斡尔",
+  32: "仫佬",
+  33: "羌",
+  34: "布朗",
+  35: "撒拉",
+  36: "毛南",
+  37: "仡佬",
+  38: "锡伯",
+  39: "阿昌",
+  40: "普米",
+  41: "塔吉克",
+  42: "怒",
+  43: "乌孜别克",
+  44: "俄罗斯",
+  45: "鄂温克",
+  46: "德昂",
+  47: "保安",
+  48: "裕固",
+  49: "京",
+  50: "塔塔尔",
+  51: "独龙",
+  52: "鄂伦春",
+  53: "赫哲",
+  54: "门巴",
+  55: "珞巴",
+  56: "基诺"
+};
 
 class HkFaceCameraView extends StatelessWidget {
   final _viewType = "HkFaceCameraView";
   final HkFaceCameraViewParams creationParams;
   const HkFaceCameraView(
-      {Key key,
-        this.creationParams = const HkFaceCameraViewParams()})
+      {Key key, this.creationParams = const HkFaceCameraViewParams()})
       : super(key: key);
 
   @override
@@ -362,13 +411,22 @@ class HkHeop {
       case HkHeopEventType.EVENT_ON_ID_CARD_RECEIVED:
         if (!_onReceiveCardData.isClosed) {
           Map map = event["IDCardInfo"];
-          var nation ="";
-          if(nations.containsKey(map["nation"])){
+          var nation = "";
+          if (nations.containsKey(map["nation"])) {
             nation = nations[map["nation"]];
-          }else{
+          } else {
             nation = "未知";
           }
-          _onReceiveCardData.add(IDCardInfo(id: map["cardNo"],name: map["name"],sex: map["sex"],address: map["address"],startDate: map["startDate"],depart: map["depart"],endDate:map["endDate"],url: map["url"],nation: nation ));
+          _onReceiveCardData.add(IDCardInfo(
+              id: map["cardNo"],
+              name: map["name"],
+              sex: map["sex"],
+              address: map["address"],
+              startDate: map["startDate"],
+              depart: map["depart"],
+              endDate: map["endDate"],
+              url: map["url"],
+              nation: nation));
         }
         break;
     }
@@ -391,19 +449,35 @@ class HkHeop {
   ///三次按压指纹.
   Future<FingerInfo> getCollectFingerprint() async {
     Map map = await _channel.invokeMethod('getCollectFingerprint');
-    return FingerInfo(map["feature"],map["bitmap"]);
+    return FingerInfo(map["feature"], map["bitmap"]);
   }
 
   ///获取门禁配置.
   Future<AcsConfigInfo> getAcsCfg() async {
-    return await _channel.invokeMethod('getAcsCfg');
+    Map map = await _channel.invokeMethod('getAcsCfg');
+    return AcsConfigInfo(
+        authType: map["authType"],
+        distance: map["distance"],
+        distanceUnit: map["distanceUnit"],
+        thermalEnabled: map["thermalEnabled"],
+        lowestThermalThreshold: map["lowestThermalThreshold"],
+        qRCodeEnabled: map["qRCodeEnabled"],
+        highestThermalThreshold: map["highestThermalThreshold"]);
   }
 
   ///设置门禁配置.
   ///[acsConfig] authType 人脸    0x20 32 刷卡    0x02 2 指纹    0x04 4 人脸或刷卡   0x2a 42 人脸或指纹   0x2c 44 刷卡或指纹  人脸或刷卡或指纹  0x2e 46
   Future<void> setAcsCfg(AcsConfigInfo acsConfig) async {
     assert(acsConfig != null, "配置信息不能为空.");
-    await _channel.invokeMethod('setAcsCfg', acsConfig);
+    await _channel.invokeMethod('setAcsCfg', {
+      "qRCodeEnabled": acsConfig.qRCodeEnabled,
+      "authType": acsConfig.authType,
+      "distance": acsConfig.distance,
+      "distanceUnit": acsConfig.distanceUnit,
+      "thermalEnabled": acsConfig.thermalEnabled,
+      "highestThermalThreshold": acsConfig.highestThermalThreshold,
+      "lowestThermalThreshold": acsConfig.lowestThermalThreshold,
+    });
   }
 
   ///获取图片建模值.
@@ -421,7 +495,7 @@ class HkHeop {
   ///人脸比对.
   ///[targetImageModel] 目标图片建模值
   ///[contrastImageModel] 对比图片建模值
-  Future<FaceInfo> faceComparison(
+  Future<double> faceComparison(
       String targetImageModel, String contrastImageModel) async {
     return await _channel.invokeMethod('faceComparison', {
       "targetImageModel": targetImageModel,

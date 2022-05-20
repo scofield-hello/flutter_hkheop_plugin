@@ -3,8 +3,6 @@ package com.chuangdun.flutter.plugin.HkHeop
 import android.content.Context
 import android.util.Log
 import android.view.View
-import android.view.ViewGroup
-import android.widget.FrameLayout
 import com.chuangdun.flutter.plugin.HkHeop.preview.CameraPreviewLayout
 import io.flutter.plugin.platform.PlatformView
 

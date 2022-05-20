@@ -3,11 +3,9 @@ package com.chuangdun.flutter.plugin.HkHeop.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jetbrains.annotations.NotNull;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -18,7 +16,7 @@ import android.util.Xml;
 import androidx.annotation.RequiresApi;
 
 
-public class XmlUtils<T> {
+public class XmlUtils {
     /**
      * 解析XML转换成字符串数字
      *

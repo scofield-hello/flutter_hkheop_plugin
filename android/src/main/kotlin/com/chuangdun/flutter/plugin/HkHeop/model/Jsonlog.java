@@ -1,18 +1,10 @@
 package com.chuangdun.flutter.plugin.HkHeop.model;
 
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
 
-@Entity
 public
 class Jsonlog {
-    @ColumnInfo(name = "status")
     private String status;
-    @ColumnInfo(name = "json")
     private String json;
-
-    @PrimaryKey(autoGenerate = true)
     int id = 0;
 
     public Jsonlog(String status, String json){
