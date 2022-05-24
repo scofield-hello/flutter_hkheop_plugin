@@ -1,7 +1,6 @@
 package com.chuangdun.flutter.plugin.HkHeop.preview;
 
 import android.content.Context;
-import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -52,6 +51,7 @@ public class PreviewSurfaceView extends SurfaceView {
                 .displayId(displayId)
                 .build();
         mSurfaceHolder = getHolder();
+
         mSurfaceHolder.setKeepScreenOn(true);
         mSurfaceHolder.addCallback(new SurfaceHolder.Callback() {
             public void surfaceCreated(SurfaceHolder holder) {}
@@ -113,6 +113,7 @@ public class PreviewSurfaceView extends SurfaceView {
      *
      */
     private void start() {
+        setRotation(90);
         ThreadUtil.runTaskInSerial(new Runnable() {
             @Override
             public void run() {

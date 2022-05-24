@@ -22,6 +22,13 @@ public class HikFaceRectView extends View implements IFaceRect {
         super(context,attrs);
         init();
     }
+
+    public HikFaceRectView(Context context)
+    {
+        super(context);
+        init();
+    }
+
     private float currentLeft = 0f;
     private float currentTop = 0f;
     private float currentWidth = 0f;

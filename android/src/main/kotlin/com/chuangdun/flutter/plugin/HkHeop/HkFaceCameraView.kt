@@ -3,6 +3,7 @@ package com.chuangdun.flutter.plugin.HkHeop
 import android.content.Context
 import android.util.Log
 import android.view.View
+import android.widget.RelativeLayout
 import com.chuangdun.flutter.plugin.HkHeop.preview.CameraPreviewLayout
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.platform.PlatformView
@@ -13,28 +14,26 @@ private const val TAG = "HkFaceCameraView"
 class HkFaceCameraView(private val context: Context, messenger: BinaryMessenger,
                        id: Int, createParams: Map<*, *>):PlatformView{
 
-    //private var relativeLayout: RelativeLayout?
+    private var relativeLayout: RelativeLayout?
     private var cameraPreviewLayout:CameraPreviewLayout? =null
     
     init {
         val cameraId = createParams["cameraId"] as Int
         val channelId = createParams["channelId"] as Int
         Log.d(TAG, "cameraId:$cameraId,channelId:$channelId")
+        relativeLayout = RelativeLayout(context)
         cameraPreviewLayout = CameraPreviewLayout(context, cameraId, channelId)
-
-        /*relativeLayout = RelativeLayout(activity)
-        uvcCameraTextureView = TextureView(activity)
-        val layoutParams = RelativeLayout.LayoutParams(dp2px(activity, width.toFloat()),
-            dp2px(activity, height.toFloat()))
+        val layoutParams = RelativeLayout.LayoutParams(dp2px(context, 640.toFloat()),
+            dp2px(context, 480.toFloat()))
         layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
-        uvcCameraTextureView!!.layoutParams = layoutParams*/
-        cameraPreviewLayout!!.rotation = 270.0f
-        //relativeLayout!!.addView(uvcCameraTextureView)
+        cameraPreviewLayout!!.layoutParams = layoutParams
+        //cameraPreviewLayout!!.rotation = 180.0f
+        relativeLayout!!.addView(cameraPreviewLayout)
     }
 
-    override fun getView(): CameraPreviewLayout? {
+    override fun getView(): View? {
         Log.i(TAG, "HkFaceCameraView:getView")
-        return cameraPreviewLayout
+        return relativeLayout
     }
 
     override fun onFlutterViewAttached(flutterView: View) {

@@ -3,7 +3,6 @@ package com.chuangdun.flutter.plugin.HkHeop.preview;
 import android.content.Context;
 import android.graphics.RectF;
 import android.os.Handler;
-import android.view.View;
 import android.widget.FrameLayout;
 
 import com.chuangdun.flutter.plugin.HkHeop.R;
@@ -13,7 +12,7 @@ import com.chuangdun.flutter.plugin.HkHeop.libs.IdentifyConstant;
 public class CameraPreviewLayout extends FrameLayout {
 
 
-    private int layoutId = R.layout.widget_camera_preview;
+    //private int layoutId = R.layout.widget_camera_preview;
     private Handler rectHandler = new Handler();
     int cameraId;
     int channelId ;
@@ -28,9 +27,20 @@ public class CameraPreviewLayout extends FrameLayout {
         this.cameraId = cameraId;
         this.channelId = channelId;
         this.displayId = IdentifyConstant.PREVIEW_PARAMS_DISPLAY_MAIN;
+        /*
         View.inflate(context, layoutId, this);
         cameraView = findViewById(R.id.cameraview);
-        rectView = findViewById(R.id.rectview);
+        cameraView.setRotation(270);
+        rectView = findViewById(R.id.rectview);*/
+        cameraView = new PreviewSurfaceView(context);
+        //cameraView.setRotation(90);
+        FrameLayout.LayoutParams cameraViewLayoutParams = new FrameLayout.LayoutParams(
+            LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT);
+        cameraView.setLayoutParams(cameraViewLayoutParams);
+        rectView = new HikFaceRectView(context);
+        rectView.setLayoutParams(cameraViewLayoutParams);
+        addView(cameraView);
+        addView(rectView);
         cameraView.initConfig(cameraId, channelId, displayId);
     }
 
