@@ -34,6 +34,7 @@ public class CameraPreviewLayout extends FrameLayout {
         cameraView.initConfig(cameraId, channelId, displayId);
     }
 
+    @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
         cameraView.setFaceRectCallback(tag, this::refreshRect);
@@ -57,6 +58,7 @@ public class CameraPreviewLayout extends FrameLayout {
         }
     }
 
+    @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         rectHandler.removeCallbacksAndMessages(null);

@@ -51,6 +51,7 @@ public class HikFaceRectView extends View implements IFaceRect {
 
 
 
+    @Override
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (!showing || !drawEnable)

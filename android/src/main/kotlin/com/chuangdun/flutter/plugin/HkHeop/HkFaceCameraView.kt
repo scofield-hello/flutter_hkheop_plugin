@@ -4,28 +4,37 @@ import android.content.Context
 import android.util.Log
 import android.view.View
 import com.chuangdun.flutter.plugin.HkHeop.preview.CameraPreviewLayout
+import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.platform.PlatformView
 
 
 private const val TAG = "HkFaceCameraView"
 
-class HkFaceCameraView(private val context: Context,   createParams: Map<*, *>):PlatformView{
+class HkFaceCameraView(private val context: Context, messenger: BinaryMessenger,
+                       id: Int, createParams: Map<*, *>):PlatformView{
 
-
-    private var linearLayout:CameraPreviewLayout? =null
+    //private var relativeLayout: RelativeLayout?
+    private var cameraPreviewLayout:CameraPreviewLayout? =null
     
     init {
         val cameraId = createParams["cameraId"] as Int
         val channelId = createParams["channelId"] as Int
         Log.d(TAG, "cameraId:$cameraId,channelId:$channelId")
-//        linearLayout = ViewGroup.inflate(context,R.layout.widget_frame_layout,null) as FrameLayout
-        linearLayout = CameraPreviewLayout(context, cameraId, channelId)
-//        linearLayout.addView(previewLayout, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+        cameraPreviewLayout = CameraPreviewLayout(context, cameraId, channelId)
+
+        /*relativeLayout = RelativeLayout(activity)
+        uvcCameraTextureView = TextureView(activity)
+        val layoutParams = RelativeLayout.LayoutParams(dp2px(activity, width.toFloat()),
+            dp2px(activity, height.toFloat()))
+        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
+        uvcCameraTextureView!!.layoutParams = layoutParams*/
+        cameraPreviewLayout!!.rotation = 270.0f
+        //relativeLayout!!.addView(uvcCameraTextureView)
     }
 
     override fun getView(): CameraPreviewLayout? {
         Log.i(TAG, "HkFaceCameraView:getView")
-        return linearLayout
+        return cameraPreviewLayout
     }
 
     override fun onFlutterViewAttached(flutterView: View) {
