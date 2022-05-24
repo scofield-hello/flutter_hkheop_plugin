@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'HKCamera.dart';
 
 class FingerInfo {
   ///指纹特征.
@@ -60,12 +61,12 @@ class AcsConfigInfo {
 
   const AcsConfigInfo(
       {this.thermalEnabled,
-        this.distanceUnit,
-        this.distance,
-        this.highestThermalThreshold,
-        this.lowestThermalThreshold,
-        this.QRCodeEnabled,
-        this.authType});
+      this.distanceUnit,
+      this.distance,
+      this.highestThermalThreshold,
+      this.lowestThermalThreshold,
+      this.QRCodeEnabled,
+      this.authType});
 }
 
 class IDCardInfo {
@@ -100,15 +101,15 @@ class IDCardInfo {
   final String url;
   IDCardInfo(
       {this.id,
-        this.name,
-        this.sex,
-        this.nation,
-        this.birth,
-        this.address,
-        this.depart,
-        this.startDate,
-        this.endDate,
-        this.url});
+      this.name,
+      this.sex,
+      this.nation,
+      this.birth,
+      this.address,
+      this.depart,
+      this.startDate,
+      this.endDate,
+      this.url});
 }
 
 class HkHeopEventType {
@@ -315,10 +316,7 @@ class Commands {
 class HkFaceCameraViewParams {
   final int channelId;
   final int cameraId;
-  const HkFaceCameraViewParams(
-      {
-        this.cameraId = 0,
-        this.channelId = 0});
+  const HkFaceCameraViewParams({this.cameraId = 0, this.channelId = 0});
 
   Map<String, dynamic> asJson() {
     return {
@@ -328,18 +326,70 @@ class HkFaceCameraViewParams {
   }
 }
 
-Map nations = {1:"汉",2:"蒙古",3:"回",4:"藏",5:"维吾尔",6:"苗",7:"彝",8:"壮",9:"布依",10:"朝鲜",11:"满",12:"侗",13:"瑶",14:"白",15:"土家"
-  ,16:"哈尼",17:"哈萨克",18:"傣",19:"黎",20:"傈僳",21:"佤",22:"畲",23:"高山",24:"拉祜",25:"水",26:"东乡",27:"纳西",28:"景颇",29:"柯尔克孜"
-  ,30:"土",31:"达斡尔",32:"仫佬",33:"羌",34:"布朗",35:"撒拉",36:"毛南",37:"仡佬",38:"锡伯",39:"阿昌",40:"普米",41:"塔吉克",42:"怒",43:"乌孜别克"
-  ,44:"俄罗斯",45:"鄂温克",46:"德昂",47:"保安",48:"裕固",49:"京",50:"塔塔尔",51:"独龙",52:"鄂伦春",53:"赫哲",54:"门巴",55:"珞巴",56:"基诺"};
-
+Map nations = {
+  1: "汉",
+  2: "蒙古",
+  3: "回",
+  4: "藏",
+  5: "维吾尔",
+  6: "苗",
+  7: "彝",
+  8: "壮",
+  9: "布依",
+  10: "朝鲜",
+  11: "满",
+  12: "侗",
+  13: "瑶",
+  14: "白",
+  15: "土家",
+  16: "哈尼",
+  17: "哈萨克",
+  18: "傣",
+  19: "黎",
+  20: "傈僳",
+  21: "佤",
+  22: "畲",
+  23: "高山",
+  24: "拉祜",
+  25: "水",
+  26: "东乡",
+  27: "纳西",
+  28: "景颇",
+  29: "柯尔克孜",
+  30: "土",
+  31: "达斡尔",
+  32: "仫佬",
+  33: "羌",
+  34: "布朗",
+  35: "撒拉",
+  36: "毛南",
+  37: "仡佬",
+  38: "锡伯",
+  39: "阿昌",
+  40: "普米",
+  41: "塔吉克",
+  42: "怒",
+  43: "乌孜别克",
+  44: "俄罗斯",
+  45: "鄂温克",
+  46: "德昂",
+  47: "保安",
+  48: "裕固",
+  49: "京",
+  50: "塔塔尔",
+  51: "独龙",
+  52: "鄂伦春",
+  53: "赫哲",
+  54: "门巴",
+  55: "珞巴",
+  56: "基诺"
+};
 
 class HkFaceCameraView extends StatelessWidget {
   final _viewType = "HkFaceCameraView";
   final HkFaceCameraViewParams creationParams;
   const HkFaceCameraView(
-      {Key key,
-        this.creationParams = const HkFaceCameraViewParams()})
+      {Key key, this.creationParams = const HkFaceCameraViewParams()})
       : super(key: key);
 
   @override
@@ -362,13 +412,22 @@ class HkHeop {
       case HkHeopEventType.EVENT_ON_ID_CARD_RECEIVED:
         if (!_onReceiveCardData.isClosed) {
           Map map = event["IDCardInfo"];
-          var nation ="";
-          if(nations.containsKey(map["nation"])){
+          var nation = "";
+          if (nations.containsKey(map["nation"])) {
             nation = nations[map["nation"]];
-          }else{
+          } else {
             nation = "未知";
           }
-          _onReceiveCardData.add(IDCardInfo(id: map["cardNo"],name: map["name"],sex: map["sex"],address: map["address"],startDate: map["startDate"],depart: map["depart"],endDate:map["endDate"],url: map["url"],nation: nation ));
+          _onReceiveCardData.add(IDCardInfo(
+              id: map["cardNo"],
+              name: map["name"],
+              sex: map["sex"],
+              address: map["address"],
+              startDate: map["startDate"],
+              depart: map["depart"],
+              endDate: map["endDate"],
+              url: map["url"],
+              nation: nation));
         }
         break;
     }

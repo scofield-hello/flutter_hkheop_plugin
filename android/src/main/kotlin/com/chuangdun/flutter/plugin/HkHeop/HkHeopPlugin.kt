@@ -1,5 +1,6 @@
 package com.chuangdun.flutter.plugin.HkHeop
 
+import android.app.Activity
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.os.Handler
@@ -14,6 +15,8 @@ import com.chuangdun.flutter.plugin.HkHeop.socket.HikSocket
 import com.chuangdun.flutter.plugin.HkHeop.socket.JsonResultParse
 import com.chuangdun.flutter.plugin.HkHeop.socket.SocketClient
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -28,17 +31,21 @@ private const val TAG = "HkHeopPlugin"
 private const val SDK_EVENT_REGISTRY_NAME = "HkHeopEvent"
 private const val FACE_VIEW_REGISTRY_NAME = "HkFaceCameraView"
 private const val EVENT_ON_ID_CARD_RECEIVED = 0
-class HkHeopPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel.StreamHandler  {
+const val CAMERA_VIEW_REGISTRY_NAME = "HkCameraView"
+const val CAMERA_VIEW_EVENT_REGISTRY_NAME = "HkCameraViewEvent"
+class HkHeopPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel.StreamHandler,ActivityAware{
   private lateinit var context: Context
   private lateinit var channel : MethodChannel
   private val uiHandler = Handler()
   private lateinit var threadPool:ThreadPoolExecutor
   private lateinit var eventChannel: EventChannel
-  private  var hikSocket: HikSocket? = null
-  private  var apiService:ApiService?  = null
+  private var hikSocket: HikSocket? = null
+  private var apiService:ApiService?  = null
   private var eventSink: EventChannel.EventSink? = null
-
+  private var activity:Activity? = null
+  private lateinit var pluginBinding: FlutterPlugin.FlutterPluginBinding
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    pluginBinding = flutterPluginBinding
     context = flutterPluginBinding.applicationContext
     threadPool = ThreadPoolExecutor(
             1, 1, 0L, TimeUnit.MILLISECONDS, LinkedBlockingQueue<Runnable>())
@@ -236,4 +243,19 @@ class HkHeopPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
     this.eventSink = null
   }
 
+  override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+    val cameraViewFactory = HkCameraViewFactory(binding.activity, pluginBinding.binaryMessenger)
+    pluginBinding.platformViewRegistry.registerViewFactory(CAMERA_VIEW_REGISTRY_NAME, cameraViewFactory)
+  }
+
+  override fun onDetachedFromActivityForConfigChanges() {
+  }
+
+  override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+    val cameraViewFactory = HkCameraViewFactory(binding.activity, pluginBinding.binaryMessenger)
+    pluginBinding.platformViewRegistry.registerViewFactory(CAMERA_VIEW_REGISTRY_NAME, cameraViewFactory)
+  }
+
+  override fun onDetachedFromActivity() {
+  }
 }
