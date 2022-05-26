@@ -21,6 +21,7 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import java.io.ByteArrayInputStream
+import java.io.File
 import java.io.InputStream
 import java.util.ArrayList
 import java.util.HashMap
@@ -157,6 +158,10 @@ class HkHeopApiHandler(private val context:Context): MethodChannel.MethodCallHan
                 })
             }
             "getCaptureFaceData" -> {
+                val file = File("/sdcard/face/liveDetect.jpg")
+                if(file.exists()){
+                    file.delete()
+                }
                 val detectTask = Runnable {
                     playSound(R.raw.start_detect_face, 4000)
                     apiService?.heopFaceCollect(object : ApiCallback<String?>() {
