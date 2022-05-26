@@ -249,6 +249,34 @@ class HkHeopApiHandler(private val context:Context): MethodChannel.MethodCallHan
                 }
                 threadPool?.execute(detectTask)
             }
+            "getDeviceInfo" -> {
+                apiService?.heopDeviceInfo( object : ApiCallback<String?>() {
+                    override fun onFailure(code: Int) {
+                        super.onFailure(code)
+                        Log.d(TAG, "heopImagesComparision: $code")
+                        result.error("500","获取配置失败!错误码:$code",null)
+                    }
+
+                    @RequiresApi(Build.VERSION_CODES.N)
+                    override fun onSuccess(apiResult: ApiResult<String?>?) {
+                        if(apiResult?.data != null){
+                            val fields: ArrayList<String> = ArrayList()
+                            fields.add("serialNumber")
+                            fields.add("model")
+                            val inputStream: InputStream = ByteArrayInputStream(apiResult.data?.toByteArray())
+                            val lists: List<String>? = XmlUtils.parse(inputStream,fields)
+                            val brand = Build.BRAND
+                            val androidSdkInt = Build.VERSION.SDK_INT
+                            result.success(mapOf(
+                                    "model" to (lists?.get(0) ?: ""),
+                                    "serialNumber" to (lists?.get(1) ?: ""),
+                                    "brand" to brand,
+                                    "androidSdkInt" to androidSdkInt
+                            ))
+                        }
+                    }
+                })
+            }
             else -> result.notImplemented()
         }
     }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:HkHeop/DeviceInfo.dart';
 import 'package:HkHeop/FaceInfo.dart';
 import 'package:HkHeop/FingerInfo.dart';
 import 'package:HkHeop/HkHeopEventType.dart';
@@ -417,6 +418,13 @@ class HkHeop {
   ///[url] 图片路径
   Future<String> getPictureAnalysis(String file) async {
     return await _channel.invokeMethod('getPictureAnalysis', file);
+  }
+
+  ///获取设备信息.
+  Future<DeviceInfo> getDeviceInfo() async {
+    var map = await _channel.invokeMethod('getDeviceInfo');
+    return DeviceInfo(
+        map["serialNumber"], map["model"],  map["brand"],map["androidSdkInt"]);
   }
 
   ///获取人脸图片.

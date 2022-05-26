@@ -9,6 +9,7 @@ class FacePage extends StatefulWidget {
 class _FacePageState extends State<FacePage> {
   HkHeop hkHeop;
   String fingerprint = "";
+  String deviceInfo = "";
   String face =
       "SElLREZSQVJNdjIuMC4wUywgRQR2fwrbNLteIYDBU4pDbCvJEmW9E/KtPd0PSwLg8BnAPbYEIfJDEFIBODb949IABaL5Cw4tC+rqf///bdwf4Tf+3hcOlKcmLvXU9gIHz//RGCT9kNYNCCMxZIBqJQn7xfh3WkkL6NVo0xrzOKtVAvBQA+fBYSexYMxggNkP0gs4gN/kv97XMUbPQLBKl/N/6ZEd1D4vm1dDQv9DPNLUAYyEAjWyE3CU8e1hThV/2OXJO0Xh2eEKgLENHu7hwPTVD8E1DaWaxdB58BWluT8YnJPgQ+/a4hGTAlDlOtbnwdndf9cMEi35VwtANz3ODsk08E/t47/GRd4hDufu5EM=";
   String idCard =
@@ -37,6 +38,7 @@ class _FacePageState extends State<FacePage> {
             Column(
               children: [
                 Text(fingerprint),
+                Text(deviceInfo),
                 FlatButton(
                     onPressed: () {
                       hkHeop.addIDCardCallback();
@@ -102,6 +104,16 @@ class _FacePageState extends State<FacePage> {
                       }).catchError((error) {});
                     },
                     child: Text("获取配置")),
+                FlatButton(
+                    onPressed: () {
+                      hkHeop.getDeviceInfo().then((value) {
+                        String serialNumber = value.serialNumber;
+                        setState(() {
+                          deviceInfo = serialNumber;
+                        });
+                      }).catchError((error) {});
+                    },
+                    child: Text("获取设备信息")),
               ],
             )
           ],
