@@ -159,8 +159,9 @@ class HkHeopApiHandler(private val context:Context): MethodChannel.MethodCallHan
             }
             "getCaptureFaceData" -> {
                 val file = File("/sdcard/face/liveDetect.jpg")
+                Log.d(TAG, "heopFaceCollect: ${file.exists()}")
                 if(file.exists()){
-                    file.delete()
+                    Log.d(TAG, "heopFaceCollect:delete: ${file.delete()}")
                 }
                 val detectTask = Runnable {
                     playSound(R.raw.start_detect_face, 4000)
