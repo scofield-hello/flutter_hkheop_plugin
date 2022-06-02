@@ -138,24 +138,28 @@ class HkHeopApiHandler(private val context:Context): MethodChannel.MethodCallHan
                 })
             }
             "getPictureAnalysis" -> {
-                val filePath = call.arguments as String
-                apiService?.heopPictureAnalysis("URL", filePath, "faceModel", object : ApiCallback<HeopResponse?>() {
+                 val detectTask = Runnable {
+                    val filePath = call.arguments as String
+                    apiService?.heopPictureAnalysis("URL", filePath, "faceModel", object : ApiCallback<HeopResponse?>() {
 
-                    override fun onFailure(code: Int) {
-                        super.onFailure(code)
-                        Log.d(TAG, "heopPictureAnalysis: $code")
-                        result.error("500","图片建模失败!错误码:$code",null)
-                    }
+                        override fun onFailure(code: Int) {
+                            super.onFailure(code)
+                            Log.d(TAG, "heopPictureAnalysis: $code")
+                            playSound(R.raw.face_model_failure, 1500)
+                            result.error("500","图片建模失败!错误码:$code",null)
+                        }
 
-                    override fun onSuccess(apiResult: ApiResult<HeopResponse?>?) {
-                        if (apiResult != null) {
-                            Log.d(TAG, "heopPictureAnalysis: " + apiResult.data)
-                            if(apiResult.data?.targets?.size != 0){
-                                result.success(apiResult.data?.targets?.get(0)?.targetModelData)
+                        override fun onSuccess(apiResult: ApiResult<HeopResponse?>?) {
+                            if (apiResult != null) {
+                                Log.d(TAG, "heopPictureAnalysis: " + apiResult.data)
+                                if(apiResult.data?.targets?.size != 0){
+                                    result.success(apiResult.data?.targets?.get(0)?.targetModelData)
+                                }
                             }
                         }
-                    }
-                })
+                    })
+                }
+                threadPool?.execute(detectTask)
             }
             "getCaptureFaceData" -> {
                 val file = File("/sdcard/face/liveDetect.jpg")
